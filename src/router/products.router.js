@@ -1,87 +1,150 @@
 import { Router } from 'express';
-import { productsService } from '../managers/index.js';
-import uploader from '../service/uploader.js';
+import ProductManager from '../managers/mongo/ProductManager.js';
 
 const router = Router();
+const productManager = new ProductManager();
 
+// GET /api/products - Get paginated products with optional query parameters
 router.get('/', async (req, res) => {
   try {
-    const products = await productsService.getProducts();
-    res.send(products);
+    const { limit = 10, page = 1, query = '', sort = '' } = req.query;
+    const products = await productManager.getProducts({ limit, page, query, sort });
+
+    res.status(200).send({
+      status: 'success',
+      payload: products.products,
+      totalPages: products.totalPages,
+      prevPage: products.prevPage,
+      nextPage: products.nextPage,
+      page: products.page,
+      hasPrevPage: products.hasPrevPage,
+      hasNextPage: products.hasNextPage,
+      prevLink: products.prevLink,
+      nextLink: products.nextLink,
+    });
   } catch (error) {
     console.error('Error fetching products:', error.message);
-    res
-      .status(500)
-      .send({ status: 'error', message: 'Error fetching products' });
+    res.status(500).send({
+      status: 'error',
+      message: 'Error fetching products',
+      error: error.message,
+    });
   }
 });
 
-router.get('/products/:pid', async (req, res) => {
+// GET /api/products/:pid - Get a product by ID
+router.get('/:pid', async (req, res) => {
   try {
-    const productId = parseInt(req.params.pid);
-    const product = await productsService.getProductById(productId);
+    const { pid } = req.params;
+    const product = await productManager.getProductById(pid);
+    
     if (!product) {
-      return res.render('404');
+      return res.status(404).send({
+        status: 'error',
+        message: 'Product not found',
+      });
     }
-    res.render('realTimeProducts', {
-      product,
-      mainImage: product.thumbnails.find((thumbnail) => thumbnail.main),
+    res.status(200).send({
+      status: 'success',
+      payload: product,
     });
   } catch (error) {
     console.error('Error fetching product details:', error.message);
-    res.render('500');
+    res.status(500).send({
+      status: 'error',
+      message: 'Error fetching product details',
+      error: error.message,
+    });
   }
 });
 
-router.post('/', uploader.array('thumbnails', 3), async (req, res) => {
-  console.log(req.file);
-  const product = req.body;
+// POST /api/products - Create a new product
+router.post('/', async (req, res) => {
   try {
+    const data = req.body;
+    if (!data.title || !data.description || !data.code || !data.price || !data.category) {
+      return res.status(400).json({
+        status: 'error',
+        error: 'Missing product values',
+      });
+    }
     const newProduct = {
-      title: product.title,
-      description: product.description,
-      code: product.code,
-      price: product.price,
-      stock: product.stock,
-      category: product.category,
+      title: data.title,
+      description: data.description,
+      code: data.code,
+      price: data.price,
+      stock: data.stock || 1,
+      category: data.category,
+      status: data.status || true,
       thumbnails: [],
     };
 
-    for (let i = 0; i < req.files.length; i++) {
-      newProduct.thumbnails.push({
-        mimetype: req.files[i].mimetype,
-        path: `/files/products/${req.files[i].filename}`,
-        main: i == 0,
-      });
-    }
-
-    const result = await productsService.createProduct(newProduct);
-    req.io.emit('newProduct', result);
-    res.send({ status: 'success', payload: result });
+    const product = await productManager.createProduct(newProduct);
+    res.status(201).json({
+      status: 'success',
+      payload: product,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ status: 'error', error: error });
+    console.error('Error creating product:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Could not create product',
+      error: error.message,
+    });
   }
 });
 
-router.delete('/:pid', async (req, res) => {
-  const productId = parseInt(req.params.pid);
-try {
-    const product = await productsService.getProductById(productId);
-    if (!product) {
-      return res
-        .status(404)
-        .send({ status: 'error', message: 'Product not found' });
+// PUT /api/products/:pid - Update a product by ID
+router.put('/:pid', async (req, res) => {
+  try {
+    const { pid } = req.params;
+    const updatedProduct = await productManager.updateProduct(pid, req.body);
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Product not found',
+      });
     }
 
-    await productsService.deleteProduct(productId);
-    req.io.emit('deleteProduct', productId);
-    res.send({ status: 'success', message: 'Product deleted successfully' });
+    res.status(200).json({
+      status: 'success',
+      payload: updatedProduct,
+    });
+  } catch (error) {
+    console.error('Error updating product:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error updating product',
+      error: error.message,
+    });
+  }
+});
+
+// DELETE /api/products/:pid - Delete a product by ID
+router.delete('/:pid', async (req, res) => {
+  try {
+    const { pid } = req.params;
+    const deletedProduct = await productManager.deleteProduct(pid);
+
+    if (!deletedProduct) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Product not found',
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Product deleted successfully',
+    });
   } catch (error) {
     console.error('Error deleting product:', error.message);
-    res
-      .status(500)
-      .send({ status: 'error', message: 'Error deleting product' });
+    res.status(500).json({
+      status: 'error',
+      message: 'Error deleting product',
+      error: error.message,
+    });
   }
 });
 

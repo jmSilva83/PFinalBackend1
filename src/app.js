@@ -1,6 +1,8 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
+import mongoose from 'mongoose'; 
+
 import viewsRouter from './router/views.router.js';
 import productsRouter from './router/products.router.js';
 import cartsRouter from './router/carts.router.js';
@@ -8,8 +10,11 @@ import __dirname from './utils.js';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+const CONNECTION_STRING = "mongodb+srv://jmsilva06:Jms30478903@clustercoliito06.yawbn0d.mongodb.net/e-commerce?retryWrites=true&w=majority&appName=ClusterColiito06"
+const connection = mongoose.connect(CONNECTION_STRING)
 const server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 const io = new Server(server);
+
 
 // Setup view engine
 app.engine('handlebars', handlebars.engine());
