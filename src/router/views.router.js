@@ -39,7 +39,7 @@ router.get('/products', async (req, res) => {
   }
 });
 
-// Vista para un producto específico
+
 router.get('/products/:pid', async (req, res) => {
   const { pid } = req.params;
 
@@ -47,7 +47,7 @@ router.get('/products/:pid', async (req, res) => {
     const product = await productModel.findById(pid).lean();
 
     if (!product) {
-      return res.render('404'); // Renderiza una página 404 si el producto no se encuentra
+      return res.render('404'); 
     }
 
     res.render('ProductDetails', {
@@ -56,7 +56,7 @@ router.get('/products/:pid', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching product details:', error.message);
-    res.render('error', { message: 'Error fetching product details' }); // Maneja cualquier error mostrando una página de error
+    res.render('error', { message: 'Error fetching product details' }); 
   }
 });
 
@@ -71,10 +71,10 @@ router.get('/carts/:cid', async (req, res) => {
       .lean();
 
     if (!cart) {
-      return res.render('404'); // Renderiza una página 404 si el carrito no se encuentra
+      return res.render('404'); 
     }
 
-    res.render('Cart', { cart }); // Renderiza la vista Cart.handlebars con los datos del carrito
+    res.render('Cart', { cart });
   } catch (error) {
     console.error('Error fetching cart details:', error.message);
     res.render('error', { message: 'Error fetching cart details' });

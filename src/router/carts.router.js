@@ -4,7 +4,6 @@ import CartManager from '../managers/mongo/CartManager.js';
 const router = Router();
 const cartManager = new CartManager();
 
-// GET /api/carts - Get all carts
 router.get('/', async (req, res) => {
   try {
     const carts = await cartManager.getAllCarts();
@@ -21,7 +20,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/carts/:cid - Obtener un carrito y sus productos completos mediante populate
 router.get('/:cid', async (req, res) => {
   try {
     const { cid } = req.params;
@@ -47,7 +45,6 @@ router.get('/:cid', async (req, res) => {
 });
 
 
-// POST /api/carts - Create a new cart
 router.post('/', async (req, res) => {
   try {
     const newCart = await cartManager.createCart();
@@ -58,7 +55,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// POST /api/carts/:cid/products/:pid - Add a product to a cart
 router.post('/:cid/products/:pid', async (req, res) => {
   const { cid, pid } = req.params;
   const { quantity } = req.body;
@@ -80,7 +76,6 @@ router.post('/:cid/products/:pid', async (req, res) => {
   }
 });
 
-// PUT /api/carts/:cid/products/:pid - Actualizar solo la cantidad de un producto en el carrito
 router.put('/:cid/products/:pid', async (req, res) => {
   try {
     const { cid, pid } = req.params;
@@ -116,7 +111,6 @@ router.put('/:cid/products/:pid', async (req, res) => {
   }
 });
 
-// PUT /api/carts/:cid - Actualizar el carrito con un arreglo de productos
 router.put('/:cid', async (req, res) => {
   try {
     const { cid } = req.params;
@@ -152,7 +146,6 @@ router.put('/:cid', async (req, res) => {
   }
 });
 
-// DELETE /api/carts/:cid/products/:pid - Eliminar un producto específico de un carrito
 router.delete('/:cid/products/:pid', async (req, res) => {
   try {
     const { cid, pid } = req.params;
@@ -179,7 +172,6 @@ router.delete('/:cid/products/:pid', async (req, res) => {
   }
 });
 
-// DELETE /api/carts/:cid - Eliminar todos los productos del carrito
 router.delete('/:cid', async (req, res) => {
   try {
     const { cid } = req.params;

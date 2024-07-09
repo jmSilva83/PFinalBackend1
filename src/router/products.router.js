@@ -4,7 +4,6 @@ import ProductManager from '../managers/mongo/ProductManager.js';
 const router = Router();
 const productManager = new ProductManager();
 
-// GET /api/products - Get paginated products with optional query parameters
 router.get('/', async (req, res) => {
   try {
     const { limit = 10, page = 1, query = '', sort = '' } = req.query;
@@ -32,7 +31,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/products/:pid - Get a product by ID
 router.get('/:pid', async (req, res) => {
   try {
     const { pid } = req.params;
@@ -58,7 +56,6 @@ router.get('/:pid', async (req, res) => {
   }
 });
 
-// POST /api/products - Create a new product
 router.post('/', async (req, res) => {
   try {
     const data = req.body;
@@ -94,7 +91,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/products/:pid - Update a product by ID
 router.put('/:pid', async (req, res) => {
   try {
     const { pid } = req.params;
@@ -121,7 +117,6 @@ router.put('/:pid', async (req, res) => {
   }
 });
 
-// DELETE /api/products/:pid - Delete a product by ID
 router.delete('/:pid', async (req, res) => {
   try {
     const { pid } = req.params;
